@@ -1,113 +1,133 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Appointment Booking</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f7f5;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-    }
+<meta charset="UTF-8">
+<title>Professional Appointment Booking</title>
 
-    .card {
-      background: white;
-      width: 360px;
-      padding: 25px;
-      border-radius: 12px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-    }
+<style>
+* {
+  box-sizing: border-box;
+}
 
-    h1 {
-      text-align: center;
-      color: #1f3d2b;
-      margin-bottom: 20px;
-    }
+body {
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: linear-gradient(135deg, #1f3d2b, #2e6b4f);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+}
 
-    label {
-      font-weight: bold;
-      font-size: 14px;
-      margin-top: 12px;
-      display: block;
-    }
+.card {
+  background: white;
+  width: 380px;
+  padding: 28px;
+  border-radius: 14px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+}
 
-    input, select {
-      width: 100%;
-      padding: 10px;
-      margin-top: 5px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      font-size: 14px;
-    }
+h1 {
+  text-align: center;
+  color: #1f3d2b;
+  margin-bottom: 20px;
+}
 
-    select:disabled {
-      background: #eee;
-    }
+label {
+  font-weight: 600;
+  font-size: 14px;
+  margin-top: 12px;
+  display: block;
+}
 
-    button {
-      margin-top: 20px;
-      width: 100%;
-      padding: 12px;
-      background: #1f3d2b;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      cursor: pointer;
-    }
+input, select {
+  width: 100%;
+  padding: 11px;
+  margin-top: 6px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
 
-    button:hover {
-      background: #244f3e;
-    }
+select:disabled {
+  background: #eee;
+}
 
-    /* ===== POPUP MODAL ===== */
-    .modal {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.5);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-    }
+button {
+  margin-top: 22px;
+  width: 100%;
+  padding: 14px;
+  background: #1f3d2b;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
 
-    .modal-content {
-      background: white;
-      width: 320px;
-      padding: 20px;
-      border-radius: 12px;
-      text-align: center;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-    }
+button:hover {
+  background: #244f3e;
+}
 
-    .modal-content h2 {
-      margin-top: 0;
-      color: #1f3d2b;
-    }
+/* ===== MODALS ===== */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
 
-    .modal-content p {
-      margin: 8px 0;
-      font-size: 14px;
-    }
+.modal-box {
+  background: white;
+  width: 340px;
+  padding: 24px;
+  border-radius: 14px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+}
 
-    .modal-content button {
-      margin-top: 15px;
-    }
-  </style>
+.modal-box h2 {
+  margin-top: 0;
+  color: #1f3d2b;
+  text-align: center;
+}
+
+.modal-box p {
+  margin: 8px 0;
+  font-size: 14px;
+}
+
+.modal-actions {
+  margin-top: 18px;
+  display: flex;
+  gap: 10px;
+}
+
+.modal-actions button {
+  flex: 1;
+}
+.secondary {
+  background: #ccc;
+  color: #333;
+}
+.secondary:hover {
+  background: #b3b3b3;
+}
+</style>
 </head>
+
 <body>
 
 <div class="card">
   <h1>Book Appointment</h1>
 
-  <label>Select Date</label>
+  <label>Date</label>
   <input type="date" id="date">
 
-  <label>Select Time</label>
+  <label>Time</label>
   <select id="timeSlots" disabled>
     <option>Select a date first</option>
   </select>
@@ -118,120 +138,149 @@
   <label>Car Model</label>
   <input type="text" id="model">
 
-  <label>Address</label>
+  <label>Car Color</label>
+  <input type="text" id="color" placeholder="e.g. Black">
+
+  <label>Service Address</label>
   <input type="text" id="address">
 
-  <button onclick="submitForm()">Submit</button>
+  <button onclick="reviewAppointment()">Continue</button>
 </div>
 
-<!-- POPUP -->
-<div class="modal" id="popup">
-  <div class="modal-content">
-    <h2>Appointment Confirmed</h2>
-    <p id="popupDate"></p>
-    <p id="popupTime"></p>
-    <p id="popupCar"></p>
-    <p id="popupAddress"></p>
-    <button onclick="closePopup()">OK</button>
+<!-- REVIEW MODAL -->
+<div class="modal" id="reviewModal">
+  <div class="modal-box">
+    <h2>Confirm Your Details</h2>
+    <p id="reviewDate"></p>
+    <p id="reviewTime"></p>
+    <p id="reviewCar"></p>
+    <p id="reviewColor"></p>
+    <p id="reviewAddress"></p>
+
+    <div class="modal-actions">
+      <button class="secondary" onclick="closeReview()">Edit</button>
+      <button onclick="confirmAppointment()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- FINAL CONFIRMATION -->
+<div class="modal" id="finalModal">
+  <div class="modal-box">
+    <h2>Appointment Booked</h2>
+    <p>✅ Your appointment has been successfully scheduled.</p>
+    <p id="finalSummary"></p>
+    <button onclick="closeFinal()">Done</button>
   </div>
 </div>
 
 <script>
-  const bookings = JSON.parse(localStorage.getItem("bookings")) || {};
-  const dateInput = document.getElementById("date");
-  const timeSelect = document.getElementById("timeSlots");
+const bookings = JSON.parse(localStorage.getItem("bookings")) || {};
+const dateInput = document.getElementById("date");
+const timeSelect = document.getElementById("timeSlots");
 
-  // Prevent past dates
-  dateInput.min = new Date().toISOString().split("T")[0];
+dateInput.min = new Date().toISOString().split("T")[0];
 
-  function generateTimes() {
-    const times = [];
-    for (let hour = 15; hour <= 21; hour++) {
-      const h = hour > 12 ? hour - 12 : hour;
-      times.push(`${h}:00 PM`);
-      if (hour !== 21) times.push(`${h}:30 PM`);
+function generateTimes() {
+  const times = [];
+  for (let h = 15; h <= 21; h++) {
+    const hour = h > 12 ? h - 12 : h;
+    times.push(`${hour}:00 PM`);
+    if (h !== 21) times.push(`${hour}:30 PM`);
+  }
+  return times;
+}
+
+function isSameDay(a, b) {
+  return a.getFullYear() === b.getFullYear() &&
+         a.getMonth() === b.getMonth() &&
+         a.getDate() === b.getDate();
+}
+
+function updateTimes() {
+  timeSelect.innerHTML = "";
+  timeSelect.disabled = true;
+
+  const placeholder = document.createElement("option");
+  placeholder.text = "Select a time";
+  placeholder.disabled = true;
+  placeholder.selected = true;
+  timeSelect.appendChild(placeholder);
+
+  if (!dateInput.value) return;
+
+  const [y,m,d] = dateInput.value.split("-").map(Number);
+  const now = new Date();
+  const minTime = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+  const booked = bookings[dateInput.value] || [];
+
+  generateTimes().forEach(time => {
+    let [hm, p] = time.split(" ");
+    let [h, min] = hm.split(":").map(Number);
+    if (p === "PM" && h !== 12) h += 12;
+
+    const slot = new Date(y, m-1, d, h, min);
+
+    if (
+      (!isSameDay(slot, now) || slot >= minTime) &&
+      !booked.includes(time)
+    ) {
+      const opt = document.createElement("option");
+      opt.value = time;
+      opt.text = time;
+      timeSelect.appendChild(opt);
+      timeSelect.disabled = false;
     }
-    return times;
+  });
+}
+
+function reviewAppointment() {
+  const date = dateInput.value;
+  const time = timeSelect.value;
+  const make = makeInput.value = document.getElementById("make").value.trim();
+  const model = document.getElementById("model").value.trim();
+  const color = document.getElementById("color").value.trim();
+  const address = document.getElementById("address").value.trim();
+
+  if (!date || !time || !make || !model || !color || !address) {
+    alert("Please complete all fields.");
+    return;
   }
 
-  function isSameDay(a, b) {
-    return a.getFullYear() === b.getFullYear() &&
-           a.getMonth() === b.getMonth() &&
-           a.getDate() === b.getDate();
-  }
+  document.getElementById("reviewDate").innerText = `📅 Date: ${date}`;
+  document.getElementById("reviewTime").innerText = `⏱ Time: ${time}`;
+  document.getElementById("reviewCar").innerText = `🚗 Car: ${make} ${model}`;
+  document.getElementById("reviewColor").innerText = `🎨 Color: ${color}`;
+  document.getElementById("reviewAddress").innerText = `📍 Address: ${address}`;
 
-  function updateTimes() {
-    timeSelect.innerHTML = "";
-    timeSelect.disabled = true;
+  document.getElementById("reviewModal").style.display = "flex";
+}
 
-    const placeholder = document.createElement("option");
-    placeholder.text = "Select a time";
-    placeholder.disabled = true;
-    placeholder.selected = true;
-    timeSelect.appendChild(placeholder);
+function closeReview() {
+  document.getElementById("reviewModal").style.display = "none";
+}
 
-    if (!dateInput.value) return;
+function confirmAppointment() {
+  const date = dateInput.value;
+  const time = timeSelect.value;
 
-    const [y, m, d] = dateInput.value.split("-").map(Number);
-    const now = new Date();
-    const minAllowed = new Date(now.getTime() + 2 * 60 * 60 * 1000);
-    const booked = bookings[dateInput.value] || [];
-    let available = 0;
+  if (!bookings[date]) bookings[date] = [];
+  bookings[date].push(time);
+  localStorage.setItem("bookings", JSON.stringify(bookings));
 
-    generateTimes().forEach(time => {
-      let [hm, period] = time.split(" ");
-      let [hour, minute] = hm.split(":").map(Number);
-      if (period === "PM" && hour !== 12) hour += 12;
+  document.getElementById("reviewModal").style.display = "none";
+  document.getElementById("finalSummary").innerText =
+    `${date} at ${time}`;
 
-      const slotTime = new Date(y, m - 1, d, hour, minute);
+  document.getElementById("finalModal").style.display = "flex";
+  updateTimes();
+}
 
-      if (
-        ((isSameDay(slotTime, now) && slotTime >= minAllowed) ||
-        !isSameDay(slotTime, now)) &&
-        !booked.includes(time)
-      ) {
-        const option = document.createElement("option");
-        option.value = time;
-        option.text = time;
-        timeSelect.appendChild(option);
-        available++;
-      }
-    });
+function closeFinal() {
+  document.getElementById("finalModal").style.display = "none";
+}
 
-    if (available > 0) timeSelect.disabled = false;
-  }
-
-  function submitForm() {
-    const date = dateInput.value;
-    const time = timeSelect.value;
-    const make = document.getElementById("make").value.trim();
-    const model = document.getElementById("model").value.trim();
-    const address = document.getElementById("address").value.trim();
-
-    if (!date || !time || !make || !model || !address) {
-      alert("Please fill out all fields.");
-      return;
-    }
-
-    if (!bookings[date]) bookings[date] = [];
-    bookings[date].push(time);
-    localStorage.setItem("bookings", JSON.stringify(bookings));
-
-    // Fill popup
-    document.getElementById("popupDate").innerText = `📅 Date: ${date}`;
-    document.getElementById("popupTime").innerText = `⏱ Time: ${time}`;
-    document.getElementById("popupCar").innerText = `🚗 Car: ${make} ${model}`;
-    document.getElementById("popupAddress").innerText = `📍 Address: ${address}`;
-
-    document.getElementById("popup").style.display = "flex";
-    updateTimes();
-  }
-
-  function closePopup() {
-    document.getElementById("popup").style.display = "none";
-  }
-
-  dateInput.addEventListener("change", updateTimes);
+dateInput.addEventListener("change", updateTimes);
 </script>
 
 </body>
