@@ -64,13 +64,38 @@
       background: #244f3e;
     }
 
-    .success {
-      margin-top: 15px;
-      color: green;
-      font-weight: bold;
-      text-align: center;
-      white-space: pre-line;
+    /* ===== POPUP MODAL ===== */
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
       display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: white;
+      width: 320px;
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+
+    .modal-content h2 {
+      margin-top: 0;
+      color: #1f3d2b;
+    }
+
+    .modal-content p {
+      margin: 8px 0;
+      font-size: 14px;
+    }
+
+    .modal-content button {
+      margin-top: 15px;
     }
   </style>
 </head>
@@ -97,8 +122,18 @@
   <input type="text" id="address">
 
   <button onclick="submitForm()">Submit</button>
+</div>
 
-  <div class="success" id="successMessage"></div>
+<!-- POPUP -->
+<div class="modal" id="popup">
+  <div class="modal-content">
+    <h2>Appointment Confirmed</h2>
+    <p id="popupDate"></p>
+    <p id="popupTime"></p>
+    <p id="popupCar"></p>
+    <p id="popupAddress"></p>
+    <button onclick="closePopup()">OK</button>
+  </div>
 </div>
 
 <script>
@@ -106,9 +141,8 @@
   const dateInput = document.getElementById("date");
   const timeSelect = document.getElementById("timeSlots");
 
-  // Block past dates
-  const today = new Date();
-  dateInput.min = today.toISOString().split("T")[0];
+  // Prevent past dates
+  dateInput.min = new Date().toISOString().split("T")[0];
 
   function generateTimes() {
     const times = [];
@@ -138,11 +172,9 @@
 
     if (!dateInput.value) return;
 
-    const [year, month, day] = dateInput.value.split("-").map(Number);
-    const selectedDate = new Date(year, month - 1, day);
+    const [y, m, d] = dateInput.value.split("-").map(Number);
     const now = new Date();
     const minAllowed = new Date(now.getTime() + 2 * 60 * 60 * 1000);
-
     const booked = bookings[dateInput.value] || [];
     let available = 0;
 
@@ -151,11 +183,10 @@
       let [hour, minute] = hm.split(":").map(Number);
       if (period === "PM" && hour !== 12) hour += 12;
 
-      const slotTime = new Date(year, month - 1, day, hour, minute);
+      const slotTime = new Date(y, m - 1, d, hour, minute);
 
-      // Logic fix 👇
       if (
-        (isSameDay(slotTime, now) && slotTime >= minAllowed ||
+        ((isSameDay(slotTime, now) && slotTime >= minAllowed) ||
         !isSameDay(slotTime, now)) &&
         !booked.includes(time)
       ) {
@@ -167,14 +198,7 @@
       }
     });
 
-    if (available === 0) {
-      const none = document.createElement("option");
-      none.text = "No times available";
-      none.disabled = true;
-      timeSelect.appendChild(none);
-    } else {
-      timeSelect.disabled = false;
-    }
+    if (available > 0) timeSelect.disabled = false;
   }
 
   function submitForm() {
@@ -190,23 +214,21 @@
     }
 
     if (!bookings[date]) bookings[date] = [];
-    if (bookings[date].includes(time)) {
-      alert("That time is already booked.");
-      return;
-    }
-
     bookings[date].push(time);
     localStorage.setItem("bookings", JSON.stringify(bookings));
 
-    document.getElementById("successMessage").innerText =
-`Appointment Booked!
-Date: ${date}
-Time: ${time}
-Car: ${make} ${model}
-Address: ${address}`;
+    // Fill popup
+    document.getElementById("popupDate").innerText = `📅 Date: ${date}`;
+    document.getElementById("popupTime").innerText = `⏱ Time: ${time}`;
+    document.getElementById("popupCar").innerText = `🚗 Car: ${make} ${model}`;
+    document.getElementById("popupAddress").innerText = `📍 Address: ${address}`;
 
-    document.getElementById("successMessage").style.display = "block";
+    document.getElementById("popup").style.display = "flex";
     updateTimes();
+  }
+
+  function closePopup() {
+    document.getElementById("popup").style.display = "none";
   }
 
   dateInput.addEventListener("change", updateTimes);
