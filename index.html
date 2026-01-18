@@ -2,8 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Appointment Booking</title>
-
+<title>Professional Appointment Booking</title>
 <style>
 * { box-sizing: border-box; }
 
@@ -19,7 +18,7 @@ body {
 
 .card {
   background: white;
-  width: 390px;
+  width: 400px;
   padding: 28px;
   border-radius: 14px;
   box-shadow: 0 20px 40px rgba(0,0,0,0.25);
@@ -47,10 +46,6 @@ input, select {
   font-size: 14px;
 }
 
-select:disabled {
-  background: #eee;
-}
-
 button {
   margin-top: 22px;
   width: 100%;
@@ -68,7 +63,7 @@ button:hover {
   background: #244f3e;
 }
 
-/* ===== MODALS ===== */
+/* Modals */
 .modal {
   position: fixed;
   inset: 0;
@@ -81,7 +76,7 @@ button:hover {
 
 .modal-box {
   background: white;
-  width: 350px;
+  width: 360px;
   padding: 24px;
   border-radius: 14px;
   box-shadow: 0 20px 40px rgba(0,0,0,0.3);
@@ -112,12 +107,16 @@ button:hover {
   background: #ccc;
   color: #333;
 }
+
 .secondary:hover {
   background: #b3b3b3;
 }
+
+option.disabled {
+  color: #999;
+}
 </style>
 </head>
-
 <body>
 
 <div class="card">
@@ -127,8 +126,7 @@ button:hover {
   <input type="date" id="date">
 
   <label>Time</label>
-  <select id="timeSlots" disabled>
-    <option>Select a date first</option>
+  <select id="timeSlots">
   </select>
 
   <label>Car Make</label>
@@ -180,6 +178,7 @@ const timeSelect = document.getElementById("timeSlots");
 
 dateInput.min = new Date().toISOString().split("T")[0];
 
+// Generate all 30-min time slots 3:00 PM - 9:00 PM
 function generateTimes() {
   const times = [];
   for (let h = 15; h <= 21; h++) {
@@ -190,49 +189,37 @@ function generateTimes() {
   return times;
 }
 
-function isSameDay(a, b) {
-  return a.getFullYear() === b.getFullYear() &&
-         a.getMonth() === b.getMonth() &&
-         a.getDate() === b.getDate();
-}
-
+// Update time dropdown
 function updateTimes() {
   timeSelect.innerHTML = "";
-  timeSelect.disabled = true;
-
-  const placeholder = document.createElement("option");
-  placeholder.text = "Select a time";
-  placeholder.disabled = true;
-  placeholder.selected = true;
-  timeSelect.appendChild(placeholder);
-
-  if (!dateInput.value) return;
-
-  const [y, m, d] = dateInput.value.split("-").map(Number);
+  const [y,m,d] = dateInput.value.split("-").map(Number);
   const now = new Date();
-  const minTime = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+  const minTime = new Date(now.getTime() + 2*60*60*1000);
   const booked = bookings[dateInput.value] || [];
 
   generateTimes().forEach(time => {
     let [hm, p] = time.split(" ");
-    let [h, min] = hm.split(":").map(Number);
+    let [h,min] = hm.split(":").map(Number);
     if (p === "PM" && h !== 12) h += 12;
+    const slot = new Date(y,m-1,d,h,min);
 
-    const slot = new Date(y, m - 1, d, h, min);
+    const opt = document.createElement("option");
+    opt.value = time;
+    opt.text = time;
 
-    if (
-      (!isSameDay(slot, now) || slot >= minTime) &&
-      !booked.includes(time)
-    ) {
-      const opt = document.createElement("option");
-      opt.value = time;
-      opt.text = time;
-      timeSelect.appendChild(opt);
-      timeSelect.disabled = false;
+    if ((slot < minTime && isSameDay(slot, now)) || booked.includes(time)) {
+      opt.disabled = true;
+      opt.className = "disabled";
     }
+    timeSelect.appendChild(opt);
   });
 }
 
+function isSameDay(a,b) {
+  return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
+}
+
+// Review appointment modal
 function reviewAppointment() {
   const date = dateInput.value;
   const time = timeSelect.value;
@@ -242,7 +229,7 @@ function reviewAppointment() {
   const address = document.getElementById("address").value.trim();
 
   if (!date || !time || !make || !model || !color || !address) {
-    alert("Please fill out all fields.");
+    alert("Please complete all fields.");
     return;
   }
 
@@ -255,30 +242,29 @@ function reviewAppointment() {
   document.getElementById("reviewModal").style.display = "flex";
 }
 
-function closeReview() {
-  document.getElementById("reviewModal").style.display = "none";
-}
+function closeReview() { document.getElementById("reviewModal").style.display="none"; }
 
 function confirmAppointment() {
   const date = dateInput.value;
   const time = timeSelect.value;
 
-  if (!bookings[date]) bookings[date] = [];
+  if (!bookings[date]) bookings[date]=[];
   bookings[date].push(time);
   localStorage.setItem("bookings", JSON.stringify(bookings));
 
-  document.getElementById("reviewModal").style.display = "none";
+  document.getElementById("reviewModal").style.display="none";
   document.getElementById("finalSummary").innerText = `${date} at ${time}`;
-  document.getElementById("finalModal").style.display = "flex";
+  document.getElementById("finalModal").style.display="flex";
 
   updateTimes();
 }
 
-function closeFinal() {
-  document.getElementById("finalModal").style.display = "none";
-}
+function closeFinal() { document.getElementById("finalModal").style.display="none"; }
 
 dateInput.addEventListener("change", updateTimes);
+
+// initialize today
+if(dateInput.value) updateTimes();
 </script>
 
 </body>
