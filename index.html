@@ -11,11 +11,12 @@
       justify-content: center;
       align-items: center;
       height: 100vh;
+      margin: 0;
     }
 
     .card {
       background: white;
-      width: 350px;
+      width: 360px;
       padding: 25px;
       border-radius: 12px;
       box-shadow: 0 10px 25px rgba(0,0,0,0.1);
@@ -43,6 +44,11 @@
       font-size: 14px;
     }
 
+    select:disabled {
+      background: #eee;
+      cursor: not-allowed;
+    }
+
     button {
       margin-top: 20px;
       width: 100%;
@@ -64,8 +70,8 @@
       color: green;
       font-weight: bold;
       text-align: center;
-      display: none;
       white-space: pre-line;
+      display: none;
     }
   </style>
 </head>
@@ -78,7 +84,9 @@
   <input type="date" id="date">
 
   <label>Select Time</label>
-  <select id="timeSlots"></select>
+  <select id="timeSlots" disabled>
+    <option>Select a date first</option>
+  </select>
 
   <label>Car Make</label>
   <input type="text" id="make" placeholder="e.g. Toyota">
@@ -96,17 +104,89 @@
 
 <script>
   const bookings = JSON.parse(localStorage.getItem("bookings")) || {};
+  const timeSelect = document.getElementById("timeSlots");
 
   function generateTimes() {
     const times = [];
     for (let hour = 15; hour <= 21; hour++) {
       const h = hour > 12 ? hour - 12 : hour;
-      const ampm = "PM";
-      times.push(`${h}:00 ${ampm}`);
-      if (hour !== 21) times.push(`${h}:30 ${ampm}`);
+      times.push(`${h}:00 PM`);
+      if (hour !== 21) times.push(`${h}:30 PM`);
     }
     return times;
   }
 
   function updateTimes() {
-    const date = document.get
+    const date = document.getElementById("date").value;
+    timeSelect.innerHTML = "";
+    timeSelect.disabled = true;
+
+    const placeholder = document.createElement("option");
+    placeholder.text = "Select a time";
+    placeholder.disabled = true;
+    placeholder.selected = true;
+    timeSelect.appendChild(placeholder);
+
+    if (!date) return;
+
+    const booked = bookings[date] || [];
+    const times = generateTimes();
+    let available = 0;
+
+    times.forEach(time => {
+      if (!booked.includes(time)) {
+        const option = document.createElement("option");
+        option.value = time;
+        option.text = time;
+        timeSelect.appendChild(option);
+        available++;
+      }
+    });
+
+    if (available === 0) {
+      const none = document.createElement("option");
+      none.text = "No times available";
+      none.disabled = true;
+      timeSelect.appendChild(none);
+    } else {
+      timeSelect.disabled = false;
+    }
+  }
+
+  function submitForm() {
+    const date = document.getElementById("date").value;
+    const time = timeSelect.value;
+    const make = document.getElementById("make").value.trim();
+    const model = document.getElementById("model").value.trim();
+    const address = document.getElementById("address").value.trim();
+
+    if (!date || !time || !make || !model || !address) {
+      alert("Please fill out all fields.");
+      return;
+    }
+
+    if (!bookings[date]) bookings[date] = [];
+    if (bookings[date].includes(time)) {
+      alert("That time is already booked.");
+      return;
+    }
+
+    bookings[date].push(time);
+    localStorage.setItem("bookings", JSON.stringify(bookings));
+
+    document.getElementById("successMessage").innerText =
+`Appointment Booked!
+Date: ${date}
+Time: ${time}
+Car: ${make} ${model}
+Address: ${address}`;
+
+    document.getElementById("successMessage").style.display = "block";
+    updateTimes();
+  }
+
+  document.getElementById("date").addEventListener("change", updateTimes);
+</script>
+
+</body>
+</html>
