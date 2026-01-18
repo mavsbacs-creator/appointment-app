@@ -34,7 +34,7 @@
       display: block;
     }
 
-    input {
+    input, select {
       width: 100%;
       padding: 10px;
       margin-top: 5px;
@@ -73,8 +73,8 @@
   <div class="card">
     <h1>Book Appointment</h1>
 
-    <label>Appointment Date & Time</label>
-    <input type="datetime-local" id="time">
+    <label>Appointment Time</label>
+    <select id="timeSlots"></select>
 
     <label>Car Make</label>
     <input type="text" id="make" placeholder="e.g. Toyota">
@@ -93,8 +93,29 @@
   </div>
 
   <script>
+    // Generate 30-min interval time slots from 3 PM to 9 PM
+    const availableTimes = [];
+    for (let hour = 15; hour <= 21; hour++) {
+      const hour12 = hour > 12 ? hour - 12 : hour;
+      const ampm = hour >= 12 ? "PM" : "AM";
+      availableTimes.push(`${hour12}:00 ${ampm}`);
+      if (hour !== 21) availableTimes.push(`${hour12}:30 ${ampm}`);
+    }
+
+    const select = document.getElementById("timeSlots");
+
+    function updateSelect() {
+      select.innerHTML = "";
+      availableTimes.forEach(time => {
+        const option = document.createElement("option");
+        option.value = time;
+        option.text = time;
+        select.appendChild(option);
+      });
+    }
+
     function submitForm() {
-      const time = document.getElementById("time").value;
+      const time = select.value;
       const make = document.getElementById("make").value;
       const model = document.getElementById("model").value;
       const address = document.getElementById("address").value;
@@ -104,16 +125,34 @@
         return;
       }
 
+      // Remove booked time from the availableTimes array
+      const index = availableTimes.indexOf(time);
+      if (index !== -1) {
+        availableTimes.splice(index, 1);
+        updateSelect();
+      } else {
+        alert("That time is already booked!");
+        return;
+      }
+
       console.log("Appointment Details:");
       console.log("Time:", time);
       console.log("Make:", make);
       console.log("Model:", model);
       console.log("Address:", address);
 
-      document.getElementById("successMessage").style.display = "block";
+      const successMsg = document.getElementById("successMessage");
+      successMsg.innerText = `Appointment booked!\nTime: ${time}\nCar: ${make} ${model}\nAddress: ${address}`;
+      successMsg.style.display = "block";
+
+      // Clear input fields
+      document.getElementById("make").value = "";
+      document.getElementById("model").value = "";
+      document.getElementById("address").value = "";
     }
+
+    updateSelect(); // Populate time dropdown
   </script>
 
 </body>
 </html>
-
