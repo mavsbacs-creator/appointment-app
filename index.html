@@ -88,13 +88,13 @@
   </select>
 
   <label>Car Make</label>
-  <input type="text" id="make">
+  <input type="text" id="make" placeholder="e.g. Toyota">
 
   <label>Car Model</label>
-  <input type="text" id="model">
+  <input type="text" id="model" placeholder="e.g. Camry">
 
   <label>Address</label>
-  <input type="text" id="address">
+  <input type="text" id="address" placeholder="123 Main St">
 
   <button onclick="submitForm()">Submit</button>
 
@@ -103,24 +103,29 @@
 
 <script>
   const bookings = JSON.parse(localStorage.getItem("bookings")) || {};
-  const dateInput = document.getElementById("date");
   const timeSelect = document.getElementById("timeSlots");
+  const dateInput = document.getElementById("date");
 
-  // Block past dates
-  const today = new Date();
-  dateInput.min = today.toISOString().split("T")[0];
+  // Prevent past date selection
+  dateInput.min = new Date().toISOString().split("T")[0];
 
   function generateTimes() {
     const times = [];
     for (let hour = 15; hour <= 21; hour++) {
-      const h = hour > 12 ? hour - 12 : hour;
-      times.push(`${h}:00 PM`);
-      if (hour !== 21) times.push(`${h}:30 PM`);
+      times.push({ label: formatTime(hour, 0), hour, min: 0 });
+      if (hour !== 21) times.push({ label: formatTime(hour, 30), hour, min: 30 });
     }
     return times;
   }
 
+  function formatTime(hour24, minute) {
+    const ampm = hour24 >= 12 ? "PM" : "AM";
+    const hour12 = hour24 > 12 ? hour24 - 12 : hour24;
+    return `${hour12}:${minute.toString().padStart(2,"0")} ${ampm}`;
+  }
+
   function updateTimes() {
+    const selectedDate = dateInput.value;
     timeSelect.innerHTML = "";
     timeSelect.disabled = true;
 
@@ -130,27 +135,25 @@
     placeholder.selected = true;
     timeSelect.appendChild(placeholder);
 
-    if (!dateInput.value) return;
+    if (!selectedDate) return;
 
-    const [year, month, day] = dateInput.value.split("-").map(Number);
+    const booked = bookings[selectedDate] || [];
     const now = new Date();
-    const minTime = new Date(now.getTime() + 2 * 60 * 60 * 1000); // +2 hours
+    const minAllowed = new Date(now.getTime() + 2 * 60 * 60 * 1000); // +2 hours
 
-    const booked = bookings[dateInput.value] || [];
     let available = 0;
 
-    generateTimes().forEach(time => {
-      let [hm, period] = time.split(" ");
-      let [hour, minute] = hm.split(":").map(Number);
+    generateTimes().forEach(slot => {
+      const slotTime = new Date(selectedDate);
+      slotTime.setHours(slot.hour, slot.min, 0, 0);
 
-      if (period === "PM" && hour !== 12) hour += 12;
-
-      const slotTime = new Date(year, month - 1, day, hour, minute);
-
-      if (slotTime >= minTime && !booked.includes(time)) {
+      if (
+        slotTime >= minAllowed &&
+        !booked.includes(slot.label)
+      ) {
         const option = document.createElement("option");
-        option.value = time;
-        option.text = time;
+        option.value = slot.label;
+        option.text = slot.label;
         timeSelect.appendChild(option);
         available++;
       }
@@ -195,6 +198,7 @@ Car: ${make} ${model}
 Address: ${address}`;
 
     document.getElementById("successMessage").style.display = "block";
+
     updateTimes();
   }
 
