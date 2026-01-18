@@ -65,94 +65,48 @@
       font-weight: bold;
       text-align: center;
       display: none;
+      white-space: pre-line;
     }
   </style>
 </head>
 <body>
 
-  <div class="card">
-    <h1>Book Appointment</h1>
+<div class="card">
+  <h1>Book Appointment</h1>
 
-    <label>Appointment Time</label>
-    <select id="timeSlots"></select>
+  <label>Select Date</label>
+  <input type="date" id="date">
 
-    <label>Car Make</label>
-    <input type="text" id="make" placeholder="e.g. Toyota">
+  <label>Select Time</label>
+  <select id="timeSlots"></select>
 
-    <label>Car Model</label>
-    <input type="text" id="model" placeholder="e.g. Camry">
+  <label>Car Make</label>
+  <input type="text" id="make" placeholder="e.g. Toyota">
 
-    <label>Address</label>
-    <input type="text" id="address" placeholder="123 Main St">
+  <label>Car Model</label>
+  <input type="text" id="model" placeholder="e.g. Camry">
 
-    <button onclick="submitForm()">Submit</button>
+  <label>Address</label>
+  <input type="text" id="address" placeholder="123 Main St">
 
-    <div class="success" id="successMessage">
-      Appointment submitted successfully!
-    </div>
-  </div>
+  <button onclick="submitForm()">Submit</button>
 
-  <script>
-    // Generate 30-min interval time slots from 3 PM to 9 PM
-    const availableTimes = [];
+  <div class="success" id="successMessage"></div>
+</div>
+
+<script>
+  const bookings = JSON.parse(localStorage.getItem("bookings")) || {};
+
+  function generateTimes() {
+    const times = [];
     for (let hour = 15; hour <= 21; hour++) {
-      const hour12 = hour > 12 ? hour - 12 : hour;
-      const ampm = hour >= 12 ? "PM" : "AM";
-      availableTimes.push(`${hour12}:00 ${ampm}`);
-      if (hour !== 21) availableTimes.push(`${hour12}:30 ${ampm}`);
+      const h = hour > 12 ? hour - 12 : hour;
+      const ampm = "PM";
+      times.push(`${h}:00 ${ampm}`);
+      if (hour !== 21) times.push(`${h}:30 ${ampm}`);
     }
+    return times;
+  }
 
-    const select = document.getElementById("timeSlots");
-
-    function updateSelect() {
-      select.innerHTML = "";
-      availableTimes.forEach(time => {
-        const option = document.createElement("option");
-        option.value = time;
-        option.text = time;
-        select.appendChild(option);
-      });
-    }
-
-    function submitForm() {
-      const time = select.value;
-      const make = document.getElementById("make").value;
-      const model = document.getElementById("model").value;
-      const address = document.getElementById("address").value;
-
-      if (!time || !make || !model || !address) {
-        alert("Please fill out all fields.");
-        return;
-      }
-
-      // Remove booked time from the availableTimes array
-      const index = availableTimes.indexOf(time);
-      if (index !== -1) {
-        availableTimes.splice(index, 1);
-        updateSelect();
-      } else {
-        alert("That time is already booked!");
-        return;
-      }
-
-      console.log("Appointment Details:");
-      console.log("Time:", time);
-      console.log("Make:", make);
-      console.log("Model:", model);
-      console.log("Address:", address);
-
-      const successMsg = document.getElementById("successMessage");
-      successMsg.innerText = `Appointment booked!\nTime: ${time}\nCar: ${make} ${model}\nAddress: ${address}`;
-      successMsg.style.display = "block";
-
-      // Clear input fields
-      document.getElementById("make").value = "";
-      document.getElementById("model").value = "";
-      document.getElementById("address").value = "";
-    }
-
-    updateSelect(); // Populate time dropdown
-  </script>
-
-</body>
-</html>
+  function updateTimes() {
+    const date = document.get
